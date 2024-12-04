@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:/application-test.properties")
 public class PokemonRepositoryTests {
 
@@ -72,7 +74,8 @@ public class PokemonRepositoryTests {
 
         Pokemon savedPokemon = pokemonRepository
                 .findById(pokemon.getId())  //Optional<Pokemon>
-                .get();
+                .orElseThrow(); // Id와 매칭되는 pokemon이 있으면 가지고 오고 없으면 Throw
+                //.get(); // Optional에 담긴 T가 null이면 NosuchElementException 발생
 
         assertThat(savedPokemon).isNotNull();
         assertThat(savedPokemon.getName()).isEqualTo("Pikachu");
@@ -106,14 +109,16 @@ public class PokemonRepositoryTests {
 
 				Pokemon pokemonSave = pokemonRepository
                 .findById(pokemon.getId())
-                .get();
+                .orElseThrow();
+                //.get();
+
+        // Setter Method 호출 - Dirty Checking(데이터가 변경이 됐는지 체크)
         pokemonSave.setName("Raichu");
         pokemonSave.setType(PokemonType.NORMAL);        
 
         assertThat(pokemonSave.getName()).isEqualTo("Raichu");
         assertThat(pokemonSave.getType()).isEqualTo(PokemonType.NORMAL);
 
-        System.out.println("pokemonSave = " + pokemonSave);
     }
 
     @Test
