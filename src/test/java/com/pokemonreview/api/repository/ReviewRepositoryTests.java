@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
@@ -15,11 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:/application-test.properties")
-public class    ReviewRepositoryTests {
+public class ReviewRepositoryTests {
     private ReviewRepository reviewRepository;
 
-    @Autowired
+    @Autowired // main에서는 생성자 쓰면 @Autowired 안써도 됨(test는 오류)
     public ReviewRepositoryTests(ReviewRepository reviewRepository) {
         this.reviewRepository = reviewRepository;
     }
@@ -72,7 +74,8 @@ public class    ReviewRepositoryTests {
 
         Review reviewReturn = reviewRepository
                 .findById(review.getId())
-                .get();
+                .orElseThrow();
+                //.get();
 
         assertThat(reviewReturn).isNotNull();
     }
