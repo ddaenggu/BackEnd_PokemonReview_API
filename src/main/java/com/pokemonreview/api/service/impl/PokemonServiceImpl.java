@@ -6,6 +6,7 @@ import com.pokemonreview.api.exception.ResourceNotFoundException;
 import com.pokemonreview.api.models.Pokemon;
 import com.pokemonreview.api.repository.PokemonRepository;
 import com.pokemonreview.api.service.PokemonService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,12 +18,15 @@ import java.util.List;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PokemonServiceImpl implements PokemonService {
-    private PokemonRepository pokemonRepository;
+    private final PokemonRepository pokemonRepository; // 생성자는 final
 
-    public PokemonServiceImpl(PokemonRepository pokemonRepository) {
+    // Constructor Injection(생성자 주입), @Autowired 생략 가능
+    // 생성자 사용해도 되고, final 변수 선언 후 생성자 없이 @RequiredArgsConstructor 선언해도 됨(lombok이 생성자 역할)
+    /*public PokemonServiceImpl(PokemonRepository pokemonRepository) {
         this.pokemonRepository = pokemonRepository;
-    }
+    }*/
 
     @Override
     public PokemonDto createPokemon(PokemonDto pokemonDto) {
@@ -42,8 +46,8 @@ public class PokemonServiceImpl implements PokemonService {
         List<Pokemon> listOfPokemon = pokemonPage.getContent();
         List<PokemonDto> content = listOfPokemon
                 .stream() //Stream<Pokemon>
-                .map(p -> mapToDto(p)) //Stream<PokemonDto>
-                //.map(this::mapToDto)
+                //.map(p -> mapToDto(p)) //Stream<PokemonDto>
+                .map(this::mapToDto)
                 .toList(); //List<PokemonDto>
 
         PageResponse<PokemonDto> pokemonResponse = new PageResponse<>();
@@ -64,11 +68,10 @@ public class PokemonServiceImpl implements PokemonService {
     }
 
     private Pokemon getExistPokemon(int id) {
-        Pokemon pokemon = pokemonRepository
-                .findById(id)
+        return pokemonRepository
+                .findById(id) // Optional<Pokemon>
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Pokemon could not be found"));
-        return pokemon;
     }
 
     @Override
@@ -89,6 +92,7 @@ public class PokemonServiceImpl implements PokemonService {
         pokemonRepository.delete(pokemon);
     }
 
+    // Entity -> Dto 변환
     private PokemonDto mapToDto(Pokemon pokemon) {
         PokemonDto pokemonDto = new PokemonDto();
         pokemonDto.setId(pokemon.getId());
@@ -97,6 +101,7 @@ public class PokemonServiceImpl implements PokemonService {
         return pokemonDto;
     }
 
+    // Dto -> Entity 변환
     private Pokemon mapToEntity(PokemonDto pokemonDto) {
         Pokemon pokemon = new Pokemon();
         pokemon.setName(pokemonDto.getName());
