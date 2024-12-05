@@ -16,7 +16,7 @@ import java.util.Date;
 public class JWTGenerator {
 	public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 	public static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
-	private final static SecureDigestAlgorithm<SecretKey, SecretKey> ALGORITHM = Jwts.SIG.HS256;
+	private final static SecureDigestAlgorithm<SecretKey, SecretKey> ALGORITHM = Jwts.SIG.HS256; //HS256 알고리즘 사용
 
 	public String generateToken(Authentication authentication) {
 		String username = authentication.getName();
@@ -24,10 +24,10 @@ public class JWTGenerator {
 		Date exprireDate = Date.from(Instant.now().plusSeconds(SecurityConstants.JWT_EXPIRATION));
 		
 		String token = Jwts.builder() //JwtBuilder
-				.subject(username)
-				.issuedAt(new Date())
-				.expiration(exprireDate)
-				.signWith(KEY, ALGORITHM)
+				.subject(username) // payload
+				.issuedAt(new Date()) // 발생시간
+				.expiration(exprireDate) // 만료시간
+				.signWith(KEY, ALGORITHM) // 시크릿키, 알고리즘
 				.compact();
 
 		System.out.println("New token :"  + token);
@@ -43,9 +43,9 @@ public class JWTGenerator {
 		return claims.getSubject();
 	}
 	
-	public boolean validateToken(String token) {
+	public boolean validateToken(String token) { // 토큰 검증
 		try {
-			Jwts.parser()
+			Jwts.parser() // 디코딩 할때 parser 함수 사용
 					.verifyWith(KEY)
 					.build()
 					.parseSignedClaims(token);
