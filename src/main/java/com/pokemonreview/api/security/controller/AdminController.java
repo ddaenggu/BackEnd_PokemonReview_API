@@ -44,7 +44,7 @@ public class AdminController {
                         .firstName(entity.getFirstName())
                         .lastName(entity.getLastName())
                         .role(entity.getRoles().get(0).getName())
-                        .build())*/
+                        .build())*/ // entity -> mapToDto(entity) 이렇게도 쓸 수 있음
                         .map(this::mapToDto) // 기존에 존재하는 mapToDto 메소드 레퍼런스 사용(위는 람다식)
                     .collect(Collectors.toList());
 
